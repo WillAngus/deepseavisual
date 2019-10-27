@@ -2,17 +2,30 @@ let t = 0;
 let targetFramerate = 60;
 let canvas;
 
+let started = false;
 let debug = false;
-let showFPS = true;
+let showFPS = false;
+
+let robotoRegular, robotoBold, robotoItalic;
+
+let playButton;
 
 let skeleton, skeleton2, skeleton3, skeleton4;
 
 let song, analyser, spectrum, rms, fft;
 
 function preload() {
+	// Load custom fonts
+	/* robotoRegular = loadFont('assets/fonts/roboto/Roboto-Regular.ttf');
+	robotoBold = loadFont('assets/fonts/roboto/Roboto-Bold.ttf');
+	robotoItalic = loadFont('assets/fonts/roboto/Roboto-Italic.ttf'); */
+
+	playButton = loadImage('https://i.imgur.com/c7oRbKU.png');
+
+	// Load song
 	//song = loadSound('https://willangus.github.io/musicshare/sound/Peepee%20Session%20Demo%202018-11-02.wav');
-	song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
-	//song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/PATIENCE.mp3');
+	//song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
+	song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/PATIENCE.mp3');
 }
 
 function setup() {
@@ -26,7 +39,7 @@ function setup() {
 	
 	// Play song and skip to (seconds)
 	song.play();
-	song.jump(20);
+	song.jump(61);
 
 	// Initialise spectrum and amplitude analyser
 	fft = new p5.FFT();
@@ -45,8 +58,19 @@ function setup() {
 }
 
 function draw() {
-  background(10 + (fft.getEnergy(150)/10), 0, 10 + fft.getEnergy(50)/10);
-	
+	background(10 + (fft.getEnergy(150)/10), 0, 10 + fft.getEnergy(50)/10);
+
+	if (!started) {
+		background(2, 0, 6);
+		image(playButton, (width/2) - 100, (height/2) - 100)
+	}
+
+	if (started) {
+  	run();
+	}
+}
+
+function run() {
 	// Analyse amplitude and frequency spectrum 
 	rms = analyser.getLevel();
 	spectrum = fft.analyze();
@@ -58,11 +82,11 @@ function draw() {
 	
 	skeleton2.run();
 	skeleton2.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(100), fft.getEnergy(5000)*2), skeleton2.energy, 3, true);
-	skeleton2.target.set((width * sin(t + 1)) + width/2, (height * cos(t + 1) + height/2));
+	skeleton2.target.set((width * sin(t)) + width/2, (height * cos(t) + height/2));
 	
 	skeleton3.run();
 	skeleton3.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(5000)*1.5, fft.getEnergy(100)/1.5), skeleton3.energy, 3, true);
-	skeleton3.target.set((width * cos(t - 1)) + width/2, (height * sin(t - 1) + height/2));
+	skeleton3.target.set((width * cos(t)) + width/2, (height * sin(t) + height/2));
 	
 	skeleton4.run();
 	skeleton4.addBone(color(fft.getEnergy(700), fft.getEnergy(10000)*2, fft.getEnergy(100)/1.5), skeleton4.energy, 3, true);
@@ -226,6 +250,7 @@ class Skeleton {
 // Allow audio after initiating touch
 function touchStarted() {
 	getAudioContext().resume();
+	started = true;
 }
 
 // Resize the canvas when viewport adjusted
