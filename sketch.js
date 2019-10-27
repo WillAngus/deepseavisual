@@ -1,6 +1,9 @@
 let t = 0;
-let debug = false;
+let targetFramerate = 60;
 let canvas;
+
+let debug = false;
+let showFPS = true;
 
 let skeleton, skeleton2, skeleton3, skeleton4;
 
@@ -16,14 +19,14 @@ function setup() {
   canvas = createCanvas(windowWidth, windowHeight);
 	
 	// Initialise Skeletons : new Skeleton(origin x, origin y, size, range, frequency focus)
-	skeleton = new Skeleton(width / 2, height / 2, 1000, 0, 4000);
-	skeleton2 = new Skeleton(100, 50, 1000, 0, 5000);
-	skeleton3 = new Skeleton(width / 1.25, height / 1.25, 1000, 0, 6000);
-	skeleton4 = new Skeleton(width / 2, height / 1.5, 1000, 0, 6200);
+	skeleton = new Skeleton(width / 2, height / 2, 100, 0, 4000);
+	skeleton2 = new Skeleton(100, 50, 100, 0, 5000);
+	skeleton3 = new Skeleton(width / 1.25, height / 1.25, 100, 0, 6000);
+	skeleton4 = new Skeleton(width / 2, height / 1.5, 100, 0, 6200);
 	
 	// Play song and skip to (seconds)
 	song.play();
-	song.jump(65);
+	song.jump(27);
 
 	// Initialise spectrum and amplitude analyser
 	fft = new p5.FFT();
@@ -37,55 +40,57 @@ function setup() {
 	
 	randomSeed(99);
 	
-  frameRate(60);
+	// Set target frames per second
+  frameRate(targetFramerate);
 }
 
 function draw() {
-  background(0, 0, fft.getEnergy(70)/5);
+  background(0, 0, fft.getEnergy(50)/5);
 	
 	// Analyse amplitude and frequency spectrum 
 	rms = analyser.getLevel();
 	spectrum = fft.analyze();
 	
-	// Run Skeletons : addBone(bone colour, bone health)
+	// Run Skeletons : addBone(bone colour, bone health, show joints)
 	skeleton.run();
-	skeleton.addBone(color(fft.getEnergy(5000)*2, fft.getEnergy(500), fft.getEnergy(100)/2), 1000, true);
+	skeleton.addBone(color(fft.getEnergy(5000)*2, fft.getEnergy(500), fft.getEnergy(100)/2), skeleton.energy, 3, true);
 	
 	skeleton2.run();
-	skeleton2.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(100), fft.getEnergy(5000)*2), 1000, true);
+	skeleton2.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(100), fft.getEnergy(5000)*2), skeleton2.energy, 3, true);
 	
 	skeleton3.run();
-	skeleton3.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(5000)*1.5, fft.getEnergy(100)/1.5), 1000, true);
+	skeleton3.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(5000)*1.5, fft.getEnergy(100)/1.5), skeleton3.energy, 3, true);
 	
 	skeleton4.run();
-	skeleton4.addBone(color(fft.getEnergy(700), fft.getEnergy(10000)*2, fft.getEnergy(100)/1.5), 1000, true);
+	skeleton4.addBone(color(fft.getEnergy(700), fft.getEnergy(10000)*2, fft.getEnergy(100)/1.5), skeleton4.energy, 3, true);
 	
 	if (debug) {
 		fill(255);
-		text('rms: ' + rms, 10, 10);
+		text('rms : ' + rms, 10, 10);
 	}
-	
-	if (!canvas.touchStarted) {
-		fill(255);
-		textAlign(CENTER);
-		text('Click to begin.', width/2, height/2);
+
+	if (showFPS) {
+		fill(0, 255, 0);
+		textAlign(RIGHT);
+		text('fps : ' + nf(frameRate(), 0, 2), width, 10);
 	}
 	
 	// Time counter
 	t = t + (0.01);
 }
 
-// Bone class : new Bone(new x pos, new y pos, previous x pos, previous y pos, colour, health, toggle joints)
+// Bone class : new Bone(new x pos, new y pos, previous x pos, previous y pos, colour, health, damage-per-tick, toggle joints)
 class Bone {
-	constructor(x, y, px, py, colour, health, showJoint) {
+	constructor(x, y, px, py, colour, health, dpt, showJoint) {
 		this.x = x;
 		this.y = y;
 		this.px = px;
 		this.py = py;
 		this.colour = colour || 'rgb(255, 255, 255)';
-		this.health = 100;
+		this.health = health;
+		if (this.health < 50) this.health = 50;
+		this.dpt = dpt;
 		this.showJoint = showJoint || false;
-		if (this.health < 100) this.health = 100;
 		this.alive = true;
 	}
 	run() {
@@ -100,10 +105,12 @@ class Bone {
 			noStroke();
 			fill(this.colour);
 			circle(this.x, this.y, this.health/5);
+			circle(this.px, this.py, this.health/5);
 		}
+		if (debug) text(this.health, this.x, this.y)
 	}
 	update() {
-		this.health-=1;
+		this.health -= this.dpt;
 	}
 	isDead() {
 		return this.health < 0;
@@ -111,7 +118,7 @@ class Bone {
 }
 
 // Skeleton class : new Skeleton(origin x, origin y, size, range, frequency focus)
-//									(objName).addBone(bone colour, bone health)
+//									(objName).addBone(bone colour, bone health, show joints)
 class Skeleton {
 	constructor(x, y, size, range, focus) {
 		this.location = createVector(x, y);
@@ -133,12 +140,10 @@ class Skeleton {
 	run() {
 
 		// Assign location to skeleton current position
-		this.location.x = this.ax[this.size - 1];
-		this.location.y = this.ay[this.size - 1];
+		this.location.set(this.ax[this.size - 1], this.ay[this.size - 1]);
 
 		// Assign location to target destination
-		this.target.x = (width * sin(t)) + width/2;
-		this.target.y = (height * cos(t) + height/2);
+		this.target.set((width * sin(t)) + width/2, (height * cos(t) + height/2));
 
 		// Calculate distance between the two points
 		this.distance = this.target.dist(this.location);
@@ -165,7 +170,7 @@ class Skeleton {
 		
 		// Add new position to array
 		if (this.follow) {
-			// Wander towards the taget
+			// Wander towards the target
 			this.ax.push(this.ax[this.size - 1] += random(-this.step / 5 - rms, this.step / 5 + rms) + this.target.x);
 			this.ay.push(this.ay[this.size - 1] += random(-this.step / 5 - rms, this.step / 5 + rms) + this.target.y);
 		} else {
@@ -186,10 +191,18 @@ class Skeleton {
 		for (let i = this.bones.length-1; i >= 0; i--) {
 			let b = this.bones[i];
 			b.run();
-			if (b.health < 0 || this.bones.length >= this.size) {
+			if (b.health <= 0) {
 				this.bones.splice(i, 1);
 			}
+			if (this.bones.length >= this.size) {
+				this.bones.splice(0, 1);
+			}
 		}
+
+		fill(255);
+		ellipse(this.ax[this.size - 1], this.ay[this.size - 1], 10);
+		fill(0);
+		ellipse(this.ax[this.size - 1], this.ay[this.size - 1], 5);
 
 		if (debug) {
 			fill(255);
@@ -197,12 +210,17 @@ class Skeleton {
 		}
 
 	}
-	addBone(bc, bh, tj) {
-		this.bones.push(new Bone(this.ax[this.size-1], this.ay[this.size-1], this.ax[this.size-5], this.ay[this.size-5], bc, bh, tj));
+	addBone(bc, bh, dpt, sj) {
+		this.bones.push(new Bone(this.ax[this.size-1], this.ay[this.size-1], this.ax[this.size-5], this.ay[this.size-5], bc, bh, dpt, sj));
 	}
 }
 
 // Allow audio after initiating touch
 function touchStarted() {
-  getAudioContext().resume();
+	getAudioContext().resume();
+}
+
+// Resize the canvas when viewport adjusted
+function windowResized() {
+	canvas.resize(windowWidth, windowHeight);
 }
