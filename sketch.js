@@ -53,16 +53,16 @@ function draw() {
 	
 	// Run Skeletons : addBone(bone colour, bone health, show joints)
 	skeleton.run();
-	skeleton.addBone(color(fft.getEnergy(5000)*2, fft.getEnergy(500), fft.getEnergy(100)/2), 100, 5, true);
+	skeleton.addBone(color(fft.getEnergy(5000)*2, fft.getEnergy(500), fft.getEnergy(100)/2), skeleton.energy, 3, true);
 	
 	skeleton2.run();
-	skeleton2.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(100), fft.getEnergy(5000)*2), 100, 5, true);
+	skeleton2.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(100), fft.getEnergy(5000)*2), skeleton2.energy, 3, true);
 	
 	skeleton3.run();
-	skeleton3.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(5000)*1.5, fft.getEnergy(100)/1.5), 100, 5, true);
+	skeleton3.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(5000)*1.5, fft.getEnergy(100)/1.5), skeleton3.energy, 3, true);
 	
 	skeleton4.run();
-	skeleton4.addBone(color(fft.getEnergy(700), fft.getEnergy(10000)*2, fft.getEnergy(100)/1.5), 100, 5, true);
+	skeleton4.addBone(color(fft.getEnergy(700), fft.getEnergy(10000)*2, fft.getEnergy(100)/1.5), skeleton4.energy, 3, true);
 	
 	if (debug) {
 		fill(255);
@@ -88,6 +88,7 @@ class Bone {
 		this.py = py;
 		this.colour = colour || 'rgb(255, 255, 255)';
 		this.health = health;
+		if (this.health < 50) this.health = 50;
 		this.dpt = dpt;
 		this.showJoint = showJoint || false;
 		this.alive = true;
