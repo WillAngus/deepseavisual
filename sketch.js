@@ -65,6 +65,12 @@ function draw() {
 		text('rms: ' + rms, 10, 10);
 	}
 	
+	if (!canvas.touchStarted) {
+		fill(255);
+		textAlign(CENTER);
+		text('Click to begin.', width/2, height/2);
+	}
+	
 	// Time counter
 	t = t + (0.01);
 }
