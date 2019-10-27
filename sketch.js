@@ -11,22 +11,22 @@ let song, analyser, spectrum, rms, fft;
 
 function preload() {
 	//song = loadSound('https://willangus.github.io/musicshare/sound/Peepee%20Session%20Demo%202018-11-02.wav');
-	song = loadSound('https://willangus.github.io/musicshare/sound/Uni/SMONK 7.mp3');
-	//song = loadSound('https://willangus.github.io/musicshare/sound/Uni/01 Patience.mp3');
+	song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
+	//song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/PATIENCE.mp3');
 }
 
 function setup() {
   canvas = createCanvas(windowWidth, windowHeight);
 	
-	// Initialise Skeletons : new Skeleton(origin x, origin y, size, range, frequency focus)
-	skeleton = new Skeleton(width / 2, height / 2, 100, 0, 4000);
-	skeleton2 = new Skeleton(100, 50, 100, 0, 5000);
-	skeleton3 = new Skeleton(width / 1.25, height / 1.25, 100, 0, 6000);
-	skeleton4 = new Skeleton(width / 2, height / 1.5, 100, 0, 6200);
+	// Initialise Skeletons : new Skeleton(origin x, origin y, size, range, frequency focus, follow threshold, show eyes)
+	skeleton  = new Skeleton(width / 2, height / 2, 100, 0, 4000, 100, true);
+	skeleton2 = new Skeleton(width / 2, height / 2, 100, 0, 5000, 100, true);
+	skeleton3 = new Skeleton(width / 2, height / 2, 100, 0, 6000, 100, true);
+	skeleton4 = new Skeleton(width / 2, height / 2, 100, 0, 6200, 100, true);
 	
 	// Play song and skip to (seconds)
 	song.play();
-	song.jump(27);
+	song.jump(20);
 
 	// Initialise spectrum and amplitude analyser
 	fft = new p5.FFT();
@@ -45,7 +45,7 @@ function setup() {
 }
 
 function draw() {
-  background(0, 0, fft.getEnergy(50)/5);
+  background(10 + (fft.getEnergy(150)/10), 0, 10 + fft.getEnergy(50)/10);
 	
 	// Analyse amplitude and frequency spectrum 
 	rms = analyser.getLevel();
@@ -54,15 +54,19 @@ function draw() {
 	// Run Skeletons : addBone(bone colour, bone health, show joints)
 	skeleton.run();
 	skeleton.addBone(color(fft.getEnergy(5000)*2, fft.getEnergy(500), fft.getEnergy(100)/2), skeleton.energy, 3, true);
+	skeleton.target.set((width * sin(t)) + width/2, (height * cos(t) + height/2));
 	
 	skeleton2.run();
 	skeleton2.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(100), fft.getEnergy(5000)*2), skeleton2.energy, 3, true);
+	skeleton2.target.set((width * sin(t + 1)) + width/2, (height * cos(t + 1) + height/2));
 	
 	skeleton3.run();
 	skeleton3.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(5000)*1.5, fft.getEnergy(100)/1.5), skeleton3.energy, 3, true);
+	skeleton3.target.set((width * cos(t - 1)) + width/2, (height * sin(t - 1) + height/2));
 	
 	skeleton4.run();
 	skeleton4.addBone(color(fft.getEnergy(700), fft.getEnergy(10000)*2, fft.getEnergy(100)/1.5), skeleton4.energy, 3, true);
+	skeleton4.target.set((width * cos(t)) + width/2, (height * sin(t) + height/2));
 	
 	if (debug) {
 		fill(255);
@@ -120,7 +124,7 @@ class Bone {
 // Skeleton class : new Skeleton(origin x, origin y, size, range, frequency focus)
 //									(objName).addBone(bone colour, bone health, show joints)
 class Skeleton {
-	constructor(x, y, size, range, focus) {
+	constructor(x, y, size, range, focus, threshold, showEyes) {
 		this.location = createVector(x, y);
 		this.target = createVector(x, y);
 		this.ax = [];
@@ -129,8 +133,10 @@ class Skeleton {
 		this.range = range;
 		this.step = range;
 		this.focus = focus;
+		this.threshold = threshold;
+		this.showEyes = showEyes || false;
 		this.follow = true;
-		this.energy;
+		this.energy = 0;
 		for ( let i = 0; i < this.size; i++ ) {
 			this.ax[i] = x;
 			this.ay[i] = y;
@@ -143,7 +149,7 @@ class Skeleton {
 		this.location.set(this.ax[this.size - 1], this.ay[this.size - 1]);
 
 		// Assign location to target destination
-		this.target.set((width * sin(t)) + width/2, (height * cos(t) + height/2));
+		//this.target.set((width * sin(t)) + width/2, (height * cos(t) + height/2));
 
 		// Calculate distance between the two points
 		this.distance = this.target.dist(this.location);
@@ -162,7 +168,7 @@ class Skeleton {
 		this.energy = fft.getEnergy(this.focus)
 		this.step = rms * (this.range + this.energy);
 
-		if (this.energy < 100) {
+		if (this.energy < this.threshold) {
 			this.follow = true;
 		} else {
 			this.follow = false;
@@ -191,7 +197,7 @@ class Skeleton {
 		for (let i = this.bones.length-1; i >= 0; i--) {
 			let b = this.bones[i];
 			b.run();
-			if (b.health <= 0) {
+			if (b.health <= 2) {
 				this.bones.splice(i, 1);
 			}
 			if (this.bones.length >= this.size) {
@@ -199,10 +205,12 @@ class Skeleton {
 			}
 		}
 
-		fill(255);
-		ellipse(this.ax[this.size - 1], this.ay[this.size - 1], 10);
-		fill(0);
-		ellipse(this.ax[this.size - 1], this.ay[this.size - 1], 5);
+		if (this.showEyes) {
+			fill(255);
+			ellipse(this.ax[this.size - 1], this.ay[this.size - 1], 10);
+			fill(0);
+			ellipse(this.ax[this.size - 1], this.ay[this.size - 1], 5);
+		}
 
 		if (debug) {
 			fill(255);
