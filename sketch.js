@@ -29,10 +29,10 @@ function setup() {
   canvas = createCanvas(windowWidth, windowHeight);
 	
 	// Initialise Skeletons : new Skeleton(origin x, origin y, size, range, frequency focus, follow threshold, show eyes, name)
-	skeleton  = new Skeleton(width / 2, height / 2, 100, 0, 4000, 150, true);
-	skeleton2 = new Skeleton(width / 2, height / 2, 100, 0, 5000, 150, true);
-	skeleton3 = new Skeleton(width / 2, height / 2, 100, 0, 6000, 150, true);
-	skeleton4 = new Skeleton(width / 2, height / 2, 100, 0, 6200, 550, true);
+	skeleton  = new Skeleton(width / 2, height / 2, 100, 0, 4000, 100, true);
+	skeleton2 = new Skeleton(width / 2, height / 2, 100, 0, 5000, 100, true);
+	skeleton3 = new Skeleton(width / 2, height / 2, 100, 0, 6000, 100, true);
+	skeleton4 = new Skeleton(width / 2, height / 2, 100, 0, 6200, 100, true);
 	
 	// Song starting point (seconds) and playback speed
 	song_start = 0;
