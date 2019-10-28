@@ -91,7 +91,7 @@ function run() {
 	
 	if (debug) {
 		fill(255);
-		//text('rms : ' + rms, 10, 10);
+		//text('delta : ' + delta, 10, 10);
 	}
 
 	if (showFPS) {
