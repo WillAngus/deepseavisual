@@ -6,23 +6,20 @@ let started = false;
 let debug = false;
 let showFPS = false;
 
-let robotoRegular, robotoBold, robotoItalic;
+let smoke = false;
 
 let playButton;
 
 let skeleton, skeleton2, skeleton3, skeleton4;
 
-let song, analyser, spectrum, rms, fft;
+let song, song_start; 
+let analyser, spectrum, rms, fft;
 
 function preload() {
-	// Load custom fonts
-	/* robotoRegular = loadFont('assets/fonts/roboto/Roboto-Regular.ttf');
-	robotoBold = loadFont('assets/fonts/roboto/Roboto-Bold.ttf');
-	robotoItalic = loadFont('assets/fonts/roboto/Roboto-Italic.ttf'); */
-
+	// Load images
 	playButton = loadImage('https://i.imgur.com/c7oRbKU.png');
 
-	// Load song
+	// Load audio
 	//song = loadSound('https://willangus.github.io/musicshare/sound/Peepee%20Session%20Demo%202018-11-02.wav');
 	//song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
 	song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/PATIENCE.mp3');
@@ -37,9 +34,9 @@ function setup() {
 	skeleton3 = new Skeleton(width / 2, height / 2, 100, 0, 6000, 100, true);
 	skeleton4 = new Skeleton(width / 2, height / 2, 100, 0, 6200, 100, true);
 	
-	// Play song and skip to (seconds)
-	song.play();
-	song.jump(61);
+	// Song starting point (seconds) and playback speed
+	song_start = 0;
+	song.rate(1);
 
 	// Initialise spectrum and amplitude analyser
 	fft = new p5.FFT();
@@ -47,10 +44,7 @@ function setup() {
 
   // Input the audio track into the amplitude analyser
   analyser.setInput(song);
-	
-	// Change playback speed
-	song.rate(1);
-	
+
 	randomSeed(99);
 	
 	// Set target frames per second
@@ -62,7 +56,7 @@ function draw() {
 
 	if (!started) {
 		background(2, 0, 6);
-		image(playButton, (width/2) - 100, (height/2) - 100)
+		image(playButton, (width/2) - 100, (height/2) - 100);
 	}
 
 	if (started) {
@@ -75,7 +69,7 @@ function run() {
 	rms = analyser.getLevel();
 	spectrum = fft.analyze();
 	
-	// Run Skeletons : addBone(bone colour, bone health, show joints)
+	// Run Skeletons : addBone(bone colour, bone health, damage-per-tick, show joints)
 	skeleton.run();
 	skeleton.addBone(color(fft.getEnergy(5000)*2, fft.getEnergy(500), fft.getEnergy(100)/2), skeleton.energy, 3, true);
 	skeleton.target.set((width * sin(t)) + width/2, (height * cos(t) + height/2));
@@ -89,12 +83,15 @@ function run() {
 	skeleton3.target.set((width * cos(t)) + width/2, (height * sin(t) + height/2));
 	
 	skeleton4.run();
-	skeleton4.addBone(color(fft.getEnergy(700), fft.getEnergy(10000)*2, fft.getEnergy(100)/1.5), skeleton4.energy, 3, true);
+	colorMode(HSB);
+	// skeleton4.addBone(color(fft.getEnergy(700), fft.getEnergy(10000)*2, fft.getEnergy(100)/1.5), skeleton4.energy, 3, true);
+	skeleton4.addBone(color(fft.getEnergy(700)*2, fft.getEnergy(10000)/2, fft.getEnergy(100)/2), skeleton4.energy, 3, true);
 	skeleton4.target.set((width * cos(t)) + width/2, (height * sin(t) + height/2));
+	colorMode(RGB);
 	
 	if (debug) {
 		fill(255);
-		text('rms : ' + rms, 10, 10);
+		//text('rms : ' + rms, 10, 10);
 	}
 
 	if (showFPS) {
@@ -126,9 +123,11 @@ class Bone {
 		this.display();
 	}
 	display() {
-		stroke(this.colour);
-		strokeWeight(this.health/10);
-		line(this.x, this.y, this.px, this.py);
+		if (!smoke) {
+			stroke(this.colour);
+			strokeWeight(this.health/10);
+			line(this.x, this.y, this.px, this.py);
+		}
 		if (this.showJoint) {
 			noStroke();
 			fill(this.colour);
@@ -236,11 +235,6 @@ class Skeleton {
 			ellipse(this.ax[this.size - 1], this.ay[this.size - 1], 5);
 		}
 
-		if (debug) {
-			fill(255);
-			text('energy: ' + this.energy, this.location.x, this.location.y);
-		}
-
 	}
 	addBone(bc, bh, dpt, sj) {
 		this.bones.push(new Bone(this.ax[this.size-1], this.ay[this.size-1], this.ax[this.size-5], this.ay[this.size-5], bc, bh, dpt, sj));
@@ -250,6 +244,10 @@ class Skeleton {
 // Allow audio after initiating touch
 function touchStarted() {
 	getAudioContext().resume();
+	if (!started) {
+		song.play();
+		song.jump(song_start);
+	}
 	started = true;
 }
 
@@ -257,3 +255,12 @@ function touchStarted() {
 function windowResized() {
 	canvas.resize(windowWidth, windowHeight);
 }
+
+/*audio_file.onchange = function(){
+    var files = this.files;
+    var file = URL.createObjectURL(files[0]); 
+
+    song = loadSound(file);
+    song.play();
+    /*audio_player.src = file; 
+    audio_player.play();*/
