@@ -1,12 +1,14 @@
 let t = 0;
 let targetFramerate = 60;
+let delta;
 let canvas;
 
 let started = false;
 let debug = false;
 let showFPS = false;
 
-let smoke = false;
+let g_smoke = false;
+let g_show_eyes = true;
 
 let playButton;
 
@@ -21,8 +23,9 @@ function preload() {
 
 	// Load audio
 	//song = loadSound('https://willangus.github.io/musicshare/sound/Peepee%20Session%20Demo%202018-11-02.wav');
+	song = loadSound("https://willangus.github.io/musicshare/sound/Where Are You/Where are you (20-10-2017).wav");
 	//song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
-	song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/PATIENCE.mp3');
+	//song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/PATIENCE.mp3');
 }
 
 function setup() {
@@ -40,15 +43,15 @@ function setup() {
 
 	// Initialise spectrum and amplitude analyser
 	fft = new p5.FFT();
-  analyser = new p5.Amplitude();
+	analyser = new p5.Amplitude();
 
   // Input the audio track into the amplitude analyser
-  analyser.setInput(song);
+	analyser.setInput(song);
 
 	randomSeed(99);
 	
 	// Set target frames per second
-  frameRate(targetFramerate);
+	frameRate(targetFramerate);
 }
 
 function draw() {
@@ -91,7 +94,8 @@ function run() {
 	
 	if (debug) {
 		fill(255);
-		//text('delta : ' + delta, 10, 10);
+		textAlign(LEFT);
+		text('delta : ' + delta, 10, 10);
 	}
 
 	if (showFPS) {
@@ -102,6 +106,8 @@ function run() {
 	
 	// Time counter
 	t = t + (0.01);
+
+	delta = deltaTime / targetFramerate;
 }
 
 // Bone class : new Bone(new x pos, new y pos, previous x pos, previous y pos, colour, health, damage-per-tick, toggle joints)
@@ -123,7 +129,7 @@ class Bone {
 		this.display();
 	}
 	display() {
-		if (!smoke) {
+		if (!g_smoke) {
 			stroke(this.colour);
 			strokeWeight(this.health/10);
 			line(this.x, this.y, this.px, this.py);
@@ -204,8 +210,8 @@ class Skeleton {
 			this.ay.push(this.ay[this.size - 1] += random(-this.step / 2 - rms, this.step / 2 + rms) + this.target.y);
 		} else {
 			// Move around aimlessly
-			this.ax.push(this.ax[this.size - 1] += random(-this.step + sin(t) - rms, this.step + sin(t) + rms));
-		  this.ay.push(this.ay[this.size - 1] += random(-this.step + cos(t) - rms, this.step + cos(t) + rms));
+			this.ax.push(this.ax[this.size - 1] += random(-this.step + sin(t) - rms, this.step + sin(t) + rms)) * delta;
+		  this.ay.push(this.ay[this.size - 1] += random(-this.step + cos(t) - rms, this.step + cos(t) + rms)) * delta;
 		}
 		
 		// Remove bones once the size limit is reached
@@ -228,11 +234,11 @@ class Skeleton {
 			}
 		}
 
-		if (this.showEyes) {
+		if (this.showEyes && g_show_eyes) {
 			fill(255);
-			ellipse(this.ax[this.size - 1], this.ay[this.size - 1], 10);
+			ellipse(this.ax[this.size - 2], this.ay[this.size - 2], 10);
 			fill(0);
-			ellipse(this.ax[this.size - 1], this.ay[this.size - 1], 5);
+			ellipse(this.ax[this.size - 2], this.ay[this.size - 2], 5);
 		}
 
 	}
@@ -255,12 +261,3 @@ function touchStarted() {
 function windowResized() {
 	canvas.resize(windowWidth, windowHeight);
 }
-
-/*audio_file.onchange = function(){
-    var files = this.files;
-    var file = URL.createObjectURL(files[0]); 
-
-    song = loadSound(file);
-    song.play();
-    /*audio_player.src = file; 
-    audio_player.play();*/
