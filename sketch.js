@@ -24,8 +24,8 @@ function preload() {
 	// Load audio
 	//song = loadSound('https://willangus.github.io/musicshare/sound/Peepee%20Session%20Demo%202018-11-02.wav');
 	//song = loadSound("https://willangus.github.io/deepseavisual/assets/sound/INFLUENCE.wav");
-	//song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
-	song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/PATIENCE.mp3');
+	song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
+	//song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/PATIENCE.mp3');
 }
 
 function setup() {
@@ -38,7 +38,7 @@ function setup() {
 	skeleton4 = new Skeleton(width / 2, height / 2, 100, 0, 6200, 100, true);
 	
 	// Song starting point (seconds) and playback speed
-	song_start = 0;
+	song_start = 27;
 	song.rate(1);
 
 	// Initialise spectrum and amplitude analyser
