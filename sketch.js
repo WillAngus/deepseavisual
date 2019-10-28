@@ -28,11 +28,11 @@ function preload() {
 function setup() {
   canvas = createCanvas(windowWidth, windowHeight);
 	
-	// Initialise Skeletons : new Skeleton(origin x, origin y, size, range, frequency focus, follow threshold, show eyes)
-	skeleton  = new Skeleton(width / 2, height / 2, 100, 0, 4000, 100, true);
-	skeleton2 = new Skeleton(width / 2, height / 2, 100, 0, 5000, 100, true);
-	skeleton3 = new Skeleton(width / 2, height / 2, 100, 0, 6000, 100, true);
-	skeleton4 = new Skeleton(width / 2, height / 2, 100, 0, 6200, 100, true);
+	// Initialise Skeletons : new Skeleton(origin x, origin y, size, range, frequency focus, follow threshold, show eyes, name)
+	skeleton  = new Skeleton(width / 2, height / 2, 100, 0, 4000, 150, true);
+	skeleton2 = new Skeleton(width / 2, height / 2, 100, 0, 5000, 150, true);
+	skeleton3 = new Skeleton(width / 2, height / 2, 100, 0, 6000, 150, true);
+	skeleton4 = new Skeleton(width / 2, height / 2, 100, 0, 6200, 550, true);
 	
 	// Song starting point (seconds) and playback speed
 	song_start = 0;
@@ -200,8 +200,8 @@ class Skeleton {
 		// Add new position to array
 		if (this.follow) {
 			// Wander towards the target
-			this.ax.push(this.ax[this.size - 1] += random(-this.step / 5 - rms, this.step / 5 + rms) + this.target.x);
-			this.ay.push(this.ay[this.size - 1] += random(-this.step / 5 - rms, this.step / 5 + rms) + this.target.y);
+			this.ax.push(this.ax[this.size - 1] += random(-this.step / 2 - rms, this.step / 2 + rms) + this.target.x);
+			this.ay.push(this.ay[this.size - 1] += random(-this.step / 2 - rms, this.step / 2 + rms) + this.target.y);
 		} else {
 			// Move around aimlessly
 			this.ax.push(this.ax[this.size - 1] += random(-this.step + sin(t) - rms, this.step + sin(t) + rms));
