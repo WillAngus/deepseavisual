@@ -23,7 +23,7 @@ function preload() {
 
 	// Load audio
 	//song = loadSound('https://willangus.github.io/musicshare/sound/Peepee%20Session%20Demo%202018-11-02.wav');
-	song = loadSound("https://willangus.github.io/musicshare/sound/Where Are You/Where are you (20-10-2017).wav");
+	song = loadSound("https://willangus.github.io/deepseavisual/assets/sound/INFLUENCE.wav");
 	//song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
 	//song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/PATIENCE.mp3');
 }
