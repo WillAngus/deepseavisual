@@ -72,21 +72,21 @@ function run() {
 	// Run Skeletons : addBone(bone colour, bone health, damage-per-tick, show joints)
 	skeleton.run();
 	skeleton.addBone(color(fft.getEnergy(5000)*2, fft.getEnergy(500), fft.getEnergy(100)/2), skeleton.energy, 3, true);
-	skeleton.target.set((width * sin(t)) + width/2, (height * cos(t) + height/2));
+	skeleton.target.set((height * sin(t)) + width/2, (height * cos(t) + height/2));
 	
 	skeleton2.run();
 	skeleton2.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(100), fft.getEnergy(5000)*2), skeleton2.energy, 3, true);
-	skeleton2.target.set((width * sin(t)) + width/2, (height * cos(t) + height/2));
+	skeleton2.target.set((height * sin(t)) + width/2, (height * cos(t) + height/2));
 	
 	skeleton3.run();
 	skeleton3.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(5000)*1.5, fft.getEnergy(100)/1.5), skeleton3.energy, 3, true);
-	skeleton3.target.set((width * cos(t)) + width/2, (height * sin(t) + height/2));
+	skeleton3.target.set((height * cos(t)) + width/2, (height * sin(t) + height/2));
 	
 	skeleton4.run();
 	colorMode(HSB);
 	// skeleton4.addBone(color(fft.getEnergy(700), fft.getEnergy(10000)*2, fft.getEnergy(100)/1.5), skeleton4.energy, 3, true);
 	skeleton4.addBone(color(fft.getEnergy(700)*2, fft.getEnergy(10000)/2, fft.getEnergy(100)/2), skeleton4.energy, 3, true);
-	skeleton4.target.set((width * cos(t)) + width/2, (height * sin(t) + height/2));
+	skeleton4.target.set((height * cos(t)) + width/2, (height * sin(t) + height/2));
 	colorMode(RGB);
 	
 	if (debug) {
