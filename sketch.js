@@ -3,6 +3,11 @@ let targetFramerate = 60;
 let delta;
 let canvas;
 
+let loading = true;
+let assets_called = 0;
+let total_assets;
+let assets_loaded = 0;
+
 let started = false;
 let debug = false;
 let showFPS = false;
@@ -12,58 +17,111 @@ let g_show_eyes = true;
 
 let playButton;
 
+let SONGS, SELECTED_SONG, SONG_START;
+let SMONK_7, PATIENCE;
+
 let skeleton, skeleton2, skeleton3, skeleton4;
 
-let song, song_start; 
 let analyser, spectrum, rms, fft;
 
-function preload() {
-	// Load images
-	playButton = loadImage('https://i.imgur.com/c7oRbKU.png');
+//function error(err) {
+//	console.log(err);
+//}
 
-	// Load audio
-	//song = loadSound('https://willangus.github.io/musicshare/sound/Peepee%20Session%20Demo%202018-11-02.wav');
-	//song = loadSound("https://willangus.github.io/deepseavisual/assets/sound/INFLUENCE.wav");
-	song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
-	//song = loadSound('https://willangus.github.io/deepseavisual/assets/sound/PATIENCE.mp3');
+function loadAsset(type, url) {
+
+	assets_called++;
+	console.log(type + ' called : ' + url)
+	
+	if (type == 'image') {
+		var output = loadImage(url, function(image) {
+			assets_loaded++;
+			console.log(type + ' loaded successfully : ' + url);
+			return image;
+		}, error);
+
+		return output;
+	}
+
+	if (type == 'audio') {
+		var output = loadSound(url, function(audio) {
+			assets_loaded++;
+			console.log(type + ' loaded successfully : ' + url);
+			return audio;
+		}, error);
+
+		output.playMode('restart');
+
+		return output;
+	}
+
+	function error(err) {
+		assets_loaded++;
+		console.error(err + ' File not found.');
+		if (type == 'image') {
+			return 
+		} else {
+			return null;
+		}
+	}
+}
+
+function preload() {
+	// Optional loading of assets
 }
 
 function setup() {
-  canvas = createCanvas(windowWidth, windowHeight);
-	
-	// Initialise Skeletons : new Skeleton(origin x, origin y, size, range, frequency focus, follow threshold, show eyes, name)
-	skeleton  = new Skeleton(width / 2, height / 2, 100, 0, 4000, 100, true);
-	skeleton2 = new Skeleton(width / 2, height / 2, 100, 0, 5000, 100, true);
-	skeleton3 = new Skeleton(width / 2, height / 2, 100, 0, 6000, 100, true);
-	skeleton4 = new Skeleton(width / 2, height / 2, 100, 0, 6200, 100, true);
-	
-	// Song starting point (seconds) and playback speed
-	song_start = 27;
-	song.rate(1);
+	// Create screen for rendering onto
+	canvas        = createCanvas(windowWidth, windowHeight);
+
+	// Load images
+	playButton    = loadAsset('image', 'https://i.imgur.com/c7oRbKU.png');
+
+	// Load audio and select song
+	SMONK_7       = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
+	PATIENCE      = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/PATIENCEs.mp3');
+	SONGS         = new Array(SMONK_7, PATIENCE);
+	SELECTED_SONG = SONGS.indexOf(SMONK_7);
+	SONG_START    = 27;
+
+	total_assets  = assets_called;
+
+	console.log('total assets : ' + total_assets);
 
 	// Initialise spectrum and amplitude analyser
 	fft = new p5.FFT();
 	analyser = new p5.Amplitude();
-
-  // Input the audio track into the amplitude analyser
-	analyser.setInput(song);
-
-	randomSeed(99);
 	
+  // Set input of amplitude analyser to selected song
+	analyser.setInput(SONGS[SELECTED_SONG]);
+
+	// Initialise Skeletons : new Skeleton(origin x, origin y, size, range, frequency focus, follow threshold, show eyes, name)
+	skeleton      = new Skeleton(width / 2, height / 2, 100, 0, 4000, 100, true);
+	skeleton2     = new Skeleton(width / 2, height / 2, 100, 0, 5000, 100, true);
+	skeleton3     = new Skeleton(width / 2, height / 2, 100, 0, 6000, 100, true);
+	skeleton4     = new Skeleton(width / 2, height / 2, 100, 0, 6200, 100, true);
+
 	// Set target frames per second
 	frameRate(targetFramerate);
 }
 
+function loadingScreen() {
+
+}
+
 function draw() {
-	background(10 + (fft.getEnergy(150)/10), 0, 10 + fft.getEnergy(50)/10);
+	if (assets_loaded == total_assets) loading = false;
 
-	if (!started) {
-		background(2, 0, 6);
-		image(playButton, (width/2) - 100, (height/2) - 100);
-	}
-
-	if (started) {
-  	run();
+	if (loading) {
+		background(0, 0, 255);
+	} else {
+		if (!started) {
+			background(2, 0, 6);
+			image(playButton, (width/2) - 100, (height/2) - 100);
+		} else {
+			background(10 + (fft.getEnergy(150)/10), 0, 10 + fft.getEnergy(50)/10);
+			run();
+		}
 	}
 }
 
@@ -151,7 +209,7 @@ class Bone {
 }
 
 // Skeleton class : new Skeleton(origin x, origin y, size, range, frequency focus)
-//									(objName).addBone(bone colour, bone health, show joints)
+//                  (objName).addBone(bone colour, bone health, show joints)
 class Skeleton {
 	constructor(x, y, size, range, focus, threshold, showEyes) {
 		this.location = createVector(x, y);
@@ -247,12 +305,26 @@ class Skeleton {
 	}
 }
 
+function selectSong(s, time) {
+	// Stop playing current song
+	SONGS[SELECTED_SONG].stop();
+
+	// Set selected song
+	SELECTED_SONG = SONGS.indexOf(s);
+
+	// Set analyser input to selected song
+	analyser.setInput(SONGS[SELECTED_SONG]);
+
+	// Play new selected song at specified time (seconds)
+	SONGS[SELECTED_SONG].play();
+	SONGS[SELECTED_SONG].jump(time);
+}
+
 // Allow audio after initiating touch
 function touchStarted() {
 	getAudioContext().resume();
-	if (!started) {
-		song.play();
-		song.jump(song_start);
+	if (!started && !loading) {
+		selectSong(SONGS[SELECTED_SONG], SONG_START);
 	}
 	started = true;
 }
