@@ -3,6 +3,8 @@ let targetFramerate = 60;
 let delta;
 let canvas;
 
+let MISSING_TEXTURE;
+
 let loading = true;
 let assets_called = 0;
 let total_assets;
@@ -24,9 +26,10 @@ let skeleton, skeleton2, skeleton3, skeleton4;
 
 let analyser, spectrum, rms, fft;
 
-//function error(err) {
-//	console.log(err);
-//}
+function preload() {
+	// Optional loading of assets
+	MISSING_TEXTURE = loadImage('https://willangus.github.io/deepseavisual/assets/img/missing_texture.png');
+}
 
 function loadAsset(type, url) {
 
@@ -58,16 +61,7 @@ function loadAsset(type, url) {
 	function error(err) {
 		assets_loaded++;
 		console.error(err + ' File not found.');
-		if (type == 'image') {
-			return 
-		} else {
-			return null;
-		}
 	}
-}
-
-function preload() {
-	// Optional loading of assets
 }
 
 function setup() {
@@ -106,18 +100,18 @@ function setup() {
 }
 
 function loadingScreen() {
-
+	background(0, 0, 255);
 }
 
 function draw() {
 	if (assets_loaded == total_assets) loading = false;
 
 	if (loading) {
-		background(0, 0, 255);
+		loadingScreen();
 	} else {
 		if (!started) {
 			background(2, 0, 6);
-			image(playButton, (width/2) - 100, (height/2) - 100);
+			image(playButton, (width/2) - 100, (height/2) - 100, 200, 200);
 		} else {
 			background(10 + (fft.getEnergy(150)/10), 0, 10 + fft.getEnergy(50)/10);
 			run();
