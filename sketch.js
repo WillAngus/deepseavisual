@@ -17,13 +17,15 @@ let showFPS = false;
 let g_smoke = false;
 let g_disable_joints = false;
 let g_show_eyes = true;
+let g_paint_mode = false;
+
+let entityManager;
+let entities = [];
 
 let png_playButton;
 
 let SONGS, SELECTED_SONG, SONG_START;
 let SMONK_7, PATIENCE;
-
-let skeleton, skeleton2, skeleton3, skeleton4;
 
 let analyser, spectrum, rms, fft;
 
@@ -90,11 +92,13 @@ function setup() {
   // Set input of amplitude analyser to selected song
 	analyser.setInput(SONGS[SELECTED_SONG]);
 
-	// Initialise Skeletons : new Skeleton(origin x, origin y, size, range, frequency focus, follow threshold, show eyes)
-	skeleton       = new Skeleton(width / 2, height / 2, 100, 0, 4000, 200, true);
-	skeleton2      = new Skeleton(width / 2, height / 2, 100, 0, 5000, 100, true);
-	skeleton3      = new Skeleton(width / 2, height / 2, 100, 0, 6000, 100, true);
-	skeleton4      = new Skeleton(width / 2, height / 2, 100, 0, 6200, 100, true);
+	entityManager = new EntityManager(2000);
+
+	// Initialise Skeletons : new Skeleton(id, origin x, origin y, size, range, frequency focus, follow threshold, show eyes)
+	entities.push(new Skeleton('skeleton0', width / 2, height / 2, 100, 0, 4000, 0, 100, true));
+	entities.push(new Skeleton('skeleton1', width / 2, height / 2, 100, 0, 5000, 1, 100, true));
+	entities.push(new Skeleton('skeleton2', width / 2, height / 2, 100, 0, 6000, 2, 100, true));
+	entities.push(new Skeleton('skeleton3', width / 2, height / 2, 100, 0, 6400, 3, 100, true));
 
 	// Set target frames per second
 	frameRate(targetFramerate);
@@ -114,7 +118,11 @@ function draw() {
 			background(2, 0, 6);
 			image(png_playButton, (width/2) - 100, (height/2) - 100, 200, 200);
 		} else {
-			background(10 + (fft.getEnergy(150)/10), 0, 10 + fft.getEnergy(50)/10);
+			if (g_paint_mode) {
+				background(10, 10, 10, 0.5);
+			} else {
+				background(10 + (fft.getEnergy(150)/10), 0, 10 + fft.getEnergy(50)/10);
+			}
 			run();
 		}
 	}
@@ -125,26 +133,8 @@ function run() {
 	rms = analyser.getLevel();
 	spectrum = fft.analyze();
 	
-	// Run Skeletons : addBone(bone colour, bone health, damage-per-tick, show joints)
-	skeleton.run();
-	skeleton.addBone(color(fft.getEnergy(5000)*2, fft.getEnergy(500), fft.getEnergy(100)/2), skeleton.energy, 3, true);
-	skeleton.target.set((height * sin(t)) + width/2, (height * cos(t) + height/2));
-	
-	skeleton2.run();
-	skeleton2.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(100), fft.getEnergy(5000)*2), skeleton2.energy, 3, true);
-	skeleton2.target.set((height * sin(t)) + width/2, (height * cos(t) + height/2));
-	
-	skeleton3.run();
-	skeleton3.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(5000)*1.5, fft.getEnergy(100)/1.5), skeleton3.energy, 3, true);
-	skeleton3.target.set((height * cos(t)) + width/2, (height * sin(t) + height/2));
-	
-	skeleton4.run();
-	colorMode(HSB);
-	// skeleton4.addBone(color(fft.getEnergy(700), fft.getEnergy(10000)*2, fft.getEnergy(100)/1.5), skeleton4.energy, 3, true);
-	skeleton4.addBone(color(fft.getEnergy(700)*2, fft.getEnergy(10000)/2, fft.getEnergy(100)/2), skeleton4.energy, 3, true);
-	skeleton4.target.set((height * cos(t)) + width/2, (height * sin(t) + height/2));
-	colorMode(RGB);
-	
+	entityManager.run();
+
 	if (debug) {
 		fill(255);
 		textAlign(LEFT);
@@ -206,7 +196,10 @@ class Bone {
 // Skeleton class : new Skeleton(origin x, origin y, size, range, frequency focus)
 //                  (objName).addBone(bone colour, bone health, show joints)
 class Skeleton {
-	constructor(x, y, size, range, focus, threshold, showEyes) {
+	constructor(id, x, y, size, range, focus, type, threshold, showEyes) {
+		this.id = id;
+		this.showId = false;
+		this.type = 'skeleton';
 		this.location = createVector(x, y);
 		this.target = createVector(x, y);
 		this.ax = [];
@@ -215,23 +208,21 @@ class Skeleton {
 		this.range = range;
 		this.step = range;
 		this.focus = focus;
+		this.type = type;
 		this.threshold = threshold;
 		this.showEyes = showEyes || false;
 		this.follow = true;
 		this.energy = 0;
-		for ( let i = 0; i < this.size; i++ ) {
-			this.ax[i] = x;
-			this.ay[i] = y;
-		}
 		this.bones = [];
+		for ( let i = 0; i < this.size; i++ ) {
+			this.ax[i]   = x;
+			this.ay[i]   = y;
+		}
 	}
 	run() {
 
 		// Assign location to skeleton current position
 		this.location.set(this.ax[this.size - 1], this.ay[this.size - 1]);
-
-		// Assign location to target destination
-		//this.target.set((width * sin(t)) + width/2, (height * cos(t) + height/2));
 
 		// Calculate distance between the two points
 		this.distance = this.target.dist(this.location);
@@ -294,23 +285,48 @@ class Skeleton {
 			ellipse(this.ax[this.size - 2], this.ay[this.size - 2], 5);
 		}
 
+		// Run Skeletons : addBone(bone colour, bone health, damage-per-tick, show joints)
+		if (this.type == 0) {
+			this.addBone(color(fft.getEnergy(5000)*2, fft.getEnergy(500), fft.getEnergy(100)/2), this.energy, 3, true);
+			this.target.set((height * sin(t)) + width/2, (height * cos(t) + height/2));
+		}
+
+		if (this.type == 1) {
+			this.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(100), fft.getEnergy(5000)*2), this.energy, 3, true);
+			this.target.set((height * sin(t)) + width/2, (height * cos(t) + height/2));
+		}
+
+		if (this.type == 2) {
+			this.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(5000)*1.5, fft.getEnergy(100)/1.5), this.energy, 3, true);
+			this.target.set((height * cos(t)) + width/2, (height * sin(t) + height/2));
+		}
+
+		colorMode(HSB);
+		if (this.type == 3) {
+			this.addBone(color(fft.getEnergy(700)*2, fft.getEnergy(10000)/2, fft.getEnergy(100)/2), this.energy, 3, true);
+			this.target.set((height * cos(t)) + width/2, (height * sin(t) + height/2));
+		}
+		colorMode(RGB);
 	}
 	addBone(bc, bh, dpt, sj) {
 		this.bones.push(new Bone(this.ax[this.size-1], this.ay[this.size-1], this.ax[this.size-5], this.ay[this.size-5], bc, bh, dpt, sj));
 	}
 }
 
-/*class Entity {
-	constructor() {
-
+class EntityManager {
+	constructor(max) {
+		this.maximum = max;
 	}
-	run {
-
+	run() {
+		for (let i = entities.length-1; i >= 0; i--) {
+			let e = entities[i];
+			e.run();
+		}
 	}
-	addSkeleton(x, y, size, range, focus, threshold, showEyes) {
-		entities.push(new Skeleton(x, y, s, r, f, t, se));
+	addSkeleton(name, x, y, size, range, focus, threshold, showEyes) {
+		entities.push(new Skeleton(x, y, size, range, focus, threshold, showEyes));
 	}
-}*/
+}
 
 function selectSong(s, t) {
 	var time = t || 0;
@@ -331,11 +347,11 @@ function selectSong(s, t) {
 
 // Allow audio after initiating touch
 function touchStarted() {
-	getAudioContext().resume();
 	if (!started && !loading) {
+		getAudioContext().resume();
 		selectSong(SONGS[SELECTED_SONG], SONG_START);
+		started = true;
 	}
-	started = true;
 }
 
 // Resize the canvas when viewport adjusted
