@@ -28,10 +28,11 @@ let SMONK_7, PATIENCE, DONT_FALL;
 let analyser, spectrum, rms, fft;
 
 function loadAsset(type, url) {
-
+	// +1 to assets called and log the type and url
 	assets_called++;
 	console.log(type + ' called : ' + url)
 	
+	// Load the image and declare the output as the asset to be used 
 	if (type == 'image') {
 		var output = loadImage(url, function(image) {
 			assets_loaded++;
@@ -77,8 +78,8 @@ function setup() {
 	// Create screen for rendering onto
 	canvas         = createCanvas(windowWidth, windowHeight);
 
+	// Define total number of assets based on amount of assets called in preload()
 	total_assets   = assets_called;
-
 	console.log('total assets : ' + total_assets);
 
 	// Initialise spectrum and amplitude analyser
@@ -91,44 +92,39 @@ function setup() {
 	entityManager = new EntityManager(2000);
 
 	// Initialise Skeletons : new Skeleton(id, origin x, origin y, size, range, frequency focus, follow threshold, color mode, show eyes)
-	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 4000, 0, 500, HSB, true));
-	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 5000, 1, 500, RGB, true));
-	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6000, 2, 500, RGB, true));
-	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6400, 3, 500, RGB, true));
+	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 4000, 0, 100, HSB, true));
+	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 5000, 1, 100, RGB, true));
+	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6000, 2, 100, RGB, true));
+	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6400, 3, 100, RGB, true));
 
-	//entities.push(new Skeleton('skeleton' + entities.length, 0, 0, 100, 0, 5000, 0, 100, HSB, true));
-
-	// Set target frames per second
+	// Set project refresh rate
 	frameRate(targetFramerate);
-}
-
-function loadingScreen() {
-	background(2, 0, 6);
-	var w = width * assets_loaded / total_assets;
-
-	noStroke()
-	fill(200, 100);
-	rect(0, height/2, w, 50);
 }
 
 function draw() {
 	if (assets_loaded == total_assets) loading = false;
 
-	if (loading) {
-		loadingScreen();
-	} else {
+	drawBackground();
+
+	if (!loading) {
 		if (!started) {
-			background(2, 0, 6);
-			image(png_playButton, (width/2) - 100, (height/2) - 100, 200, 200);
+			startScreen();
 		} else {
-			if (g_paint_mode) {
-				background(10, 10, 10, 0.5);
-			} else {
-				background(10 + (fft.getEnergy(150)/10), 0, 10 + fft.getEnergy(50)/10);
-			}
 			run();
 		}
 	}
+}
+
+function drawBackground() {
+	if (!g_paint_mode) background(10 + (fft.getEnergy(150)/10), 0, 10 + fft.getEnergy(50)/10);
+	
+	else background(10, 10, 10, 0.5);
+
+	if (!started) background(2, 0, 6);
+}
+
+function startScreen() {
+	image(png_playButton, (width/2) - 100, (height/2) - 100, 200, 200);
 }
 
 function run() {
@@ -174,6 +170,9 @@ class Bone {
 		this.update();
 		this.display();
 	}
+	update() {
+		this.health -= this.dpt;
+	}
 	display() {
 		if (!g_smoke) {
 			stroke(this.colour);
@@ -187,9 +186,6 @@ class Bone {
 			circle(this.px, this.py, this.health/5);
 		}
 		if (debug) text(this.health, this.x, this.y)
-	}
-	update() {
-		this.health -= this.dpt;
 	}
 	isDead() {
 		return this.health < 0;
@@ -224,7 +220,10 @@ class Skeleton {
 		}
 	}
 	run() {
-
+		this.update();
+		this.display();
+	}
+	update() {
 		// Assign location to skeleton current position
 		this.location.set(this.ax[this.size - 1], this.ay[this.size - 1]);
 
@@ -247,7 +246,7 @@ class Skeleton {
 
 		if (this.energy < this.threshold) {
 			this.follow = true;
-		} else {
+		} else if (!mouseIsPressed) {
 			this.follow = false;
 		}
 		
@@ -262,38 +261,16 @@ class Skeleton {
 		  this.ay.push(this.ay[this.size - 1] += random(-this.step + cos(t) - rms, this.step + cos(t) + rms)) * delta;
 		}
 		
-		// Remove bones once the size limit is reached
+		// Set target to the mouse when pressed down
+		if (mouseIsPressed) this.followMouse(true);
+
+		// Remove points once the size limit is reached
 		if (this.ax.length > this.size) this.ax.splice(1, 1);
 		if (this.ay.length > this.size) this.ay.splice(1, 1);
 
 		// Constrain all points to the screen
 		this.ax[this.size - 1] = constrain(this.ax[this.size - 1], 0, width);
 		this.ay[this.size - 1] = constrain(this.ay[this.size - 1], 0, height);
-		
-		// Cycle through bones array to render and splice
-		for (let i = this.bones.length-1; i >= 0; i--) {
-			let b = this.bones[i];
-			b.run();
-			if (b.health <= 2) {
-				this.bones.splice(i, 1);
-			}
-			if (this.bones.length >= this.size) {
-				this.bones.splice(0, 1);
-			}
-		}
-
-		if (this.showEyes && g_show_eyes) {
-			fill(255);
-			ellipse(this.ax[this.size - 2], this.ay[this.size - 2], 10);
-			fill(0);
-			ellipse(this.ax[this.size - 2], this.ay[this.size - 2], 5);
-		}
-
-		if (mouseIsPressed) {
-			this.follow = true;
-			this.mappedDistance = map(this.distance, 100, 0, 3, 1);
-			this.target.set(mouseX, mouseY);
-		}
 
 		// Run Skeletons : addBone(bone colour, bone health, damage-per-tick, show joints)
 		colorMode(this.colorMode);
@@ -318,11 +295,40 @@ class Skeleton {
 		}
 		colorMode(RGB);
 	}
+	display() {
+		// Cycle through bones to render and/or remove when health is 0 or size limit reached
+		for (let i = this.bones.length-1; i >= 0; i--) {
+			let b = this.bones[i];
+			b.run();
+			if (b.health <= 2) {
+				this.bones.splice(i, 1);
+			}
+			if (this.bones.length >= this.size) {
+				this.bones.splice(0, 1);
+			}
+		}
+
+		// Render eyes		
+		if (this.showEyes && g_show_eyes) {
+			fill(255);
+			ellipse(this.ax[this.size - 2], this.ay[this.size - 2], 10);
+			fill(0);
+			ellipse(this.ax[this.size - 2], this.ay[this.size - 2], 5);
+		}
+	}
+	followMouse(boolean) {
+		if (boolean) {
+			this.follow = true;
+			this.mappedDistance = map(this.distance, 100, 0, 3, 1);
+			this.target.set(mouseX, mouseY);
+		}
+	}
 	addBone(bc, bh, dpt, sj) {
 		this.bones.push(new Bone(this.ax[this.size-1], this.ay[this.size-1], this.ax[this.size-5], this.ay[this.size-5], bc, bh, dpt, sj));
 	}
 }
 
+// Entity Mangager : new EntityManager(maximum entities)
 class EntityManager {
 	constructor(max) {
 		this.maximum = max;
@@ -339,6 +345,7 @@ class EntityManager {
 }
 
 function selectSong(s, t) {
+	// Declare song starting time
 	var time = t || 0;
 
 	// Stop playing current song
