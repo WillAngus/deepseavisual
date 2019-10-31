@@ -15,9 +15,10 @@ let debug = false;
 let showFPS = false;
 
 let g_smoke = false;
+let g_disable_joints = false;
 let g_show_eyes = true;
 
-let playButton;
+let png_playButton;
 
 let SONGS, SELECTED_SONG, SONG_START;
 let SMONK_7, PATIENCE;
@@ -66,19 +67,19 @@ function loadAsset(type, url) {
 
 function setup() {
 	// Create screen for rendering onto
-	canvas        = createCanvas(windowWidth, windowHeight);
+	canvas         = createCanvas(windowWidth, windowHeight);
 
 	// Load images
-	playButton    = loadAsset('image', 'https://i.imgur.com/c7oRbKU.png');
+	png_playButton = loadAsset('image', 'https://willangus.github.io/deepseavisual/assets/img/play_button.png');
 
 	// Load audio and select song
-	SMONK_7       = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
-	PATIENCE      = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/PATIENCEs.mp3');
-	SONGS         = new Array(SMONK_7, PATIENCE);
-	SELECTED_SONG = SONGS.indexOf(SMONK_7);
-	SONG_START    = 27;
+	SMONK_7        = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
+	PATIENCE       = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/PATIENCE.mp3');
+	SONGS          = new Array(SMONK_7, PATIENCE);
+	SELECTED_SONG  = SONGS.indexOf(SMONK_7);
+	SONG_START     = 27;
 
-	total_assets  = assets_called;
+	total_assets   = assets_called;
 
 	console.log('total assets : ' + total_assets);
 
@@ -89,11 +90,11 @@ function setup() {
   // Set input of amplitude analyser to selected song
 	analyser.setInput(SONGS[SELECTED_SONG]);
 
-	// Initialise Skeletons : new Skeleton(origin x, origin y, size, range, frequency focus, follow threshold, show eyes, name)
-	skeleton      = new Skeleton(width / 2, height / 2, 100, 0, 4000, 100, true);
-	skeleton2     = new Skeleton(width / 2, height / 2, 100, 0, 5000, 100, true);
-	skeleton3     = new Skeleton(width / 2, height / 2, 100, 0, 6000, 100, true);
-	skeleton4     = new Skeleton(width / 2, height / 2, 100, 0, 6200, 100, true);
+	// Initialise Skeletons : new Skeleton(origin x, origin y, size, range, frequency focus, follow threshold, show eyes)
+	skeleton       = new Skeleton(width / 2, height / 2, 100, 0, 4000, 200, true);
+	skeleton2      = new Skeleton(width / 2, height / 2, 100, 0, 5000, 100, true);
+	skeleton3      = new Skeleton(width / 2, height / 2, 100, 0, 6000, 100, true);
+	skeleton4      = new Skeleton(width / 2, height / 2, 100, 0, 6200, 100, true);
 
 	// Set target frames per second
 	frameRate(targetFramerate);
@@ -111,7 +112,7 @@ function draw() {
 	} else {
 		if (!started) {
 			background(2, 0, 6);
-			image(playButton, (width/2) - 100, (height/2) - 100, 200, 200);
+			image(png_playButton, (width/2) - 100, (height/2) - 100, 200, 200);
 		} else {
 			background(10 + (fft.getEnergy(150)/10), 0, 10 + fft.getEnergy(50)/10);
 			run();
@@ -186,7 +187,7 @@ class Bone {
 			strokeWeight(this.health/10);
 			line(this.x, this.y, this.px, this.py);
 		}
-		if (this.showJoint) {
+		if (this.showJoint && !g_disable_joints) {
 			noStroke();
 			fill(this.colour);
 			circle(this.x, this.y, this.health/5);
@@ -299,7 +300,21 @@ class Skeleton {
 	}
 }
 
-function selectSong(s, time) {
+/*class Entity {
+	constructor() {
+
+	}
+	run {
+
+	}
+	addSkeleton(x, y, size, range, focus, threshold, showEyes) {
+		entities.push(new Skeleton(x, y, s, r, f, t, se));
+	}
+}*/
+
+function selectSong(s, t) {
+	var time = t || 0;
+
 	// Stop playing current song
 	SONGS[SELECTED_SONG].stop();
 
@@ -311,7 +326,7 @@ function selectSong(s, time) {
 
 	// Play new selected song at specified time (seconds)
 	SONGS[SELECTED_SONG].play();
-	SONGS[SELECTED_SONG].jump(time);
+	SONGS[SELECTED_SONG].jump(t);
 }
 
 // Allow audio after initiating touch
