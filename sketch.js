@@ -70,7 +70,7 @@ function preload() {
 	// Load audio and select song
 	SMONK_7        = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
 	PATIENCE       = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/PATIENCE.mp3');
-	DONT_FALL      = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/DONT_FALL.wav');
+	DONT_FALL      = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/PLEASE DONT FALL.wav');
 	SONGS          = new Array(SMONK_7, PATIENCE, DONT_FALL);
 	SELECTED_SONG  = SONGS.indexOf(SMONK_7);
 	SONG_START     = 27;
