@@ -90,11 +90,13 @@ function setup() {
 
 	entityManager = new EntityManager(2000);
 
-	// Initialise Skeletons : new Skeleton(id, origin x, origin y, size, range, frequency focus, follow threshold, show eyes)
-	entities.push(new Skeleton('skeleton0', width / 2, height / 2, 100, 0, 4000, 0, 100, true));
-	entities.push(new Skeleton('skeleton1', width / 2, height / 2, 100, 0, 5000, 1, 100, true));
-	entities.push(new Skeleton('skeleton2', width / 2, height / 2, 100, 0, 6000, 2, 100, true));
-	entities.push(new Skeleton('skeleton3', width / 2, height / 2, 100, 0, 6400, 3, 100, true));
+	// Initialise Skeletons : new Skeleton(id, origin x, origin y, size, range, frequency focus, follow threshold, color mode, show eyes)
+	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 4000, 0, 100, HSB, true));
+	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 5000, 1, 100, RGB, true));
+	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6000, 2, 100, RGB, true));
+	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6400, 3, 100, RGB, true));
+
+	//entities.push(new Skeleton('skeleton' + entities.length, 0, 0, 100, 0, 5000, 0, 100, HSB, true));
 
 	// Set target frames per second
 	frameRate(targetFramerate);
@@ -197,7 +199,7 @@ class Bone {
 // Skeleton class : new Skeleton(origin x, origin y, size, range, frequency focus)
 //                  (objName).addBone(bone colour, bone health, show joints)
 class Skeleton {
-	constructor(id, x, y, size, range, focus, type, threshold, showEyes) {
+	constructor(id, x, y, size, range, focus, type, threshold, colorMode, showEyes) {
 		this.id = id;
 		this.showId = false;
 		this.type = 'skeleton';
@@ -212,6 +214,7 @@ class Skeleton {
 		this.type = type;
 		this.threshold = threshold;
 		this.showEyes = showEyes || false;
+		this.colorMode = colorMode;
 		this.follow = true;
 		this.energy = 0;
 		this.bones = [];
@@ -287,6 +290,7 @@ class Skeleton {
 		}
 
 		// Run Skeletons : addBone(bone colour, bone health, damage-per-tick, show joints)
+		colorMode(this.colorMode);
 		if (this.type == 0) {
 			this.addBone(color(fft.getEnergy(5000)*2, fft.getEnergy(500), fft.getEnergy(100)/2), this.energy, 3, true);
 			this.target.set((height * sin(t)) + width/2, (height * cos(t) + height/2));
@@ -302,7 +306,6 @@ class Skeleton {
 			this.target.set((height * cos(t)) + width/2, (height * sin(t) + height/2));
 		}
 
-		colorMode(HSB);
 		if (this.type == 3) {
 			this.addBone(color(fft.getEnergy(700)*2, fft.getEnergy(10000)/2, fft.getEnergy(100)/2), this.energy, 3, true);
 			this.target.set((height * cos(t)) + width/2, (height * sin(t) + height/2));
