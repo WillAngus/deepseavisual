@@ -3,8 +3,6 @@ let targetFramerate = 60;
 let delta;
 let canvas;
 
-let MISSING_TEXTURE;
-
 let loading = true;
 let assets_called = 0;
 let total_assets;
@@ -22,17 +20,12 @@ let g_paint_mode = false;
 let entityManager;
 let entities = [];
 
-let png_playButton;
+let png_playButton, png_missingTexture;
 
 let SONGS, SELECTED_SONG, SONG_START;
-let SMONK_7, PATIENCE;
+let SMONK_7, PATIENCE, DONT_FALL;
 
 let analyser, spectrum, rms, fft;
-
-function preload() {
-	// Optional loading of assets
-	MISSING_TEXTURE = loadImage('https://willangus.github.io/deepseavisual/assets/img/missing_texture.png');
-}
 
 function loadAsset(type, url) {
 
@@ -63,13 +56,13 @@ function loadAsset(type, url) {
 
 	function error(err) {
 		assets_loaded++;
-		console.error(err + ' File not found.');
+		console.error(err);
 	}
 }
 
-function setup() {
-	// Create screen for rendering onto
-	canvas         = createCanvas(windowWidth, windowHeight);
+function preload() {
+	// Optional loading of assets
+	png_missingTexture = loadImage('https://willangus.github.io/deepseavisual/assets/img/missing_texture.png');
 
 	// Load images
 	png_playButton = loadAsset('image', 'https://willangus.github.io/deepseavisual/assets/img/play_button.png');
@@ -77,9 +70,15 @@ function setup() {
 	// Load audio and select song
 	SMONK_7        = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
 	PATIENCE       = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/PATIENCE.mp3');
-	SONGS          = new Array(SMONK_7, PATIENCE);
+	DONT_FALL      = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/DONT_FALL.wav');
+	SONGS          = new Array(SMONK_7, PATIENCE, DONT_FALL);
 	SELECTED_SONG  = SONGS.indexOf(SMONK_7);
 	SONG_START     = 27;
+}
+
+function setup() {
+	// Create screen for rendering onto
+	canvas         = createCanvas(windowWidth, windowHeight);
 
 	total_assets   = assets_called;
 
@@ -105,7 +104,12 @@ function setup() {
 }
 
 function loadingScreen() {
-	background(0, 0, 255);
+	background(2, 0, 6);
+	var w = width * assets_loaded / total_assets;
+
+	noStroke()
+	fill(200, 100);
+	rect(0, height/2, w, 50);
 }
 
 function draw() {
