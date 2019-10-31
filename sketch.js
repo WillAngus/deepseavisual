@@ -91,10 +91,10 @@ function setup() {
 	entityManager = new EntityManager(2000);
 
 	// Initialise Skeletons : new Skeleton(id, origin x, origin y, size, range, frequency focus, follow threshold, color mode, show eyes)
-	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 4000, 0, 100, HSB, true));
-	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 5000, 1, 100, RGB, true));
-	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6000, 2, 100, RGB, true));
-	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6400, 3, 100, RGB, true));
+	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 4000, 0, 500, HSB, true));
+	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 5000, 1, 500, RGB, true));
+	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6000, 2, 500, RGB, true));
+	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6400, 3, 500, RGB, true));
 
 	//entities.push(new Skeleton('skeleton' + entities.length, 0, 0, 100, 0, 5000, 0, 100, HSB, true));
 
@@ -230,7 +230,7 @@ class Skeleton {
 
 		// Calculate distance between the two points
 		this.distance = this.target.dist(this.location);
-		this.mappedDistance = map(this.distance, 100, 0, 1, 0.75);
+		if (!mouseIsPressed) this.mappedDistance = map(this.distance, 100, 0, 1, 0.75);
 
 		// Calculate direction of target towards skeleton
 		this.target.sub(this.location);
@@ -289,26 +289,32 @@ class Skeleton {
 			ellipse(this.ax[this.size - 2], this.ay[this.size - 2], 5);
 		}
 
+		if (mouseIsPressed) {
+			this.follow = true;
+			this.mappedDistance = map(this.distance, 100, 0, 3, 1);
+			this.target.set(mouseX, mouseY);
+		}
+
 		// Run Skeletons : addBone(bone colour, bone health, damage-per-tick, show joints)
 		colorMode(this.colorMode);
 		if (this.type == 0) {
 			this.addBone(color(fft.getEnergy(5000)*2, fft.getEnergy(500), fft.getEnergy(100)/2), this.energy, 3, true);
-			this.target.set((height * sin(t)) + width/2, (height * cos(t) + height/2));
+			if (!mouseIsPressed) this.target.set((height * sin(t)) + width/2, (height * cos(t) + height/2));
 		}
 
 		if (this.type == 1) {
 			this.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(100), fft.getEnergy(5000)*2), this.energy, 3, true);
-			this.target.set((height * sin(t)) + width/2, (height * cos(t) + height/2));
+			if (!mouseIsPressed) this.target.set((height * sin(t)) + width/2, (height * cos(t) + height/2));
 		}
 
 		if (this.type == 2) {
 			this.addBone(color(fft.getEnergy(500)/2, fft.getEnergy(5000)*1.5, fft.getEnergy(100)/1.5), this.energy, 3, true);
-			this.target.set((height * cos(t)) + width/2, (height * sin(t) + height/2));
+			if (!mouseIsPressed) this.target.set((height * cos(t)) + width/2, (height * sin(t) + height/2));
 		}
 
 		if (this.type == 3) {
 			this.addBone(color(fft.getEnergy(700)*2, fft.getEnergy(10000)/2, fft.getEnergy(100)/2), this.energy, 3, true);
-			this.target.set((height * cos(t)) + width/2, (height * sin(t) + height/2));
+			if (!mouseIsPressed) this.target.set((height * cos(t)) + width/2, (height * sin(t) + height/2));
 		}
 		colorMode(RGB);
 	}
