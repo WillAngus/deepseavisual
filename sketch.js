@@ -61,9 +61,6 @@ function loadAsset(type, url) {
 }
 
 function preload() {
-	// Optional loading of assets
-	png_missingTexture = loadImage('https://willangus.github.io/deepseavisual/assets/img/missing_texture.png');
-
 	// Load images
 	png_playButton = loadAsset('image', 'https://willangus.github.io/deepseavisual/assets/img/play_button.png');
 
