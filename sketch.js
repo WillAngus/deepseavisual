@@ -63,11 +63,11 @@ function loadAsset(type, url) {
 
 function preload() {
 	// Load images
-	png_playButton = loadAsset('image', 'https://willangus.github.io/deepseavisual/assets/img/play_button.png');
+	png_playButton = loadAsset('image', 'assets/img/play_button.png');
 
 	// Load audio and select song
-	SMONK_7        = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/SMONK 7.mp3');
-	PATIENCE       = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/PATIENCE.mp3');
+	SMONK_7        = loadAsset('audio', 'assets/sound/SMONK 7.mp3');
+	PATIENCE       = loadAsset('audio', 'assets/sound/PATIENCE.mp3');
 	//DONT_FALL      = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/PLEASE DONT FALL.wav');
 	SONGS          = new Array(SMONK_7, PATIENCE, DONT_FALL);
 	SELECTED_SONG  = SONGS.indexOf(SMONK_7);
@@ -89,6 +89,7 @@ function setup() {
   // Set input of amplitude analyser to selected song
 	analyser.setInput(SONGS[SELECTED_SONG]);
 
+	// Create new entity manager
 	entityManager = new EntityManager(2000);
 
 	// Initialise Skeletons : new Skeleton(id, origin x, origin y, size, range, frequency focus, follow threshold, color mode, show eyes)
