@@ -92,11 +92,11 @@ function setup() {
 	// Create new entity manager
 	entityManager = new EntityManager(2000);
 
-	// Initialise Skeletons : new Skeleton(id, origin x, origin y, size, range, frequency focus, follow threshold, color mode, show eyes)
-	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 4000, 0, 100, HSB, true));
-	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 5000, 1, 100, RGB, true));
-	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6000, 2, 100, RGB, true));
-	entities.push(new Skeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6400, 3, 100, RGB, true));
+	// Spawn Skeletons : new Skeleton(id, origin x, origin y, size, range, frequency focus, follow threshold, color mode, show eyes)
+	entityManager.spawnSkeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 4000, 0, 100, HSB, true);
+	entityManager.spawnSkeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 5000, 1, 100, RGB, true);
+	entityManager.spawnSkeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6000, 2, 100, RGB, true);
+	entityManager.spawnSkeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6400, 3, 100, RGB, true);
 
 	// Set project refresh rate
 	frameRate(targetFramerate);
@@ -333,6 +333,7 @@ class Skeleton {
 class EntityManager {
 	constructor(max) {
 		this.maximum = max;
+		this.skeletons = [];
 	}
 	run() {
 		for (let i = entities.length-1; i >= 0; i--) {
@@ -340,8 +341,8 @@ class EntityManager {
 			e.run();
 		}
 	}
-	addSkeleton(name, x, y, size, range, focus, threshold, showEyes) {
-		entities.push(new Skeleton(x, y, size, range, focus, threshold, showEyes));
+	spawnSkeleton(id, x, y, size, range, focus, type, threshold, colorMode, showEyes) {
+		entities.push(new Skeleton(id, x, y, size, range, focus, type, threshold, colorMode, showEyes));
 	}
 }
 
