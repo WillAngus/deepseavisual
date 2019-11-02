@@ -19,6 +19,7 @@ let g_paint_mode = false;
 
 let entityManager;
 let entities = [];
+var filterSkeletons;
 
 let png_playButton, png_missingTexture;
 
@@ -90,13 +91,13 @@ function setup() {
 	analyser.setInput(SONGS[SELECTED_SONG]);
 
 	// Create new entity manager
-	entityManager = new EntityManager(2000);
+	entityManager  = new EntityManager(10);
 
 	// Spawn Skeletons : new Skeleton(id, origin x, origin y, size, range, frequency focus, follow threshold, color mode, show eyes)
-	entityManager.spawnSkeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 4000, 0, 100, HSB, true);
-	entityManager.spawnSkeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 5000, 1, 100, RGB, true);
-	entityManager.spawnSkeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6000, 2, 100, RGB, true);
-	entityManager.spawnSkeleton('skeleton' + entities.length, width / 2, height / 2, 100, 0, 6400, 3, 100, RGB, true);
+	entityManager.spawnSkeleton('skeleton' + entityManager.skeletons.length, width / 2, height / 2, 100, 0, 4000, 0, 100, HSB, true);
+	entityManager.spawnSkeleton('skeleton' + entityManager.skeletons.length, width / 2, height / 2, 100, 0, 5000, 1, 100, RGB, true);
+	entityManager.spawnSkeleton('skeleton' + entityManager.skeletons.length, width / 2, height / 2, 100, 0, 6000, 2, 100, RGB, true);
+	entityManager.spawnSkeleton('skeleton' + entityManager.skeletons.length, width / 2, height / 2, 100, 0, 6400, 3, 100, RGB, true);
 
 	// Set project refresh rate
 	frameRate(targetFramerate);
@@ -199,7 +200,6 @@ class Skeleton {
 	constructor(id, x, y, size, range, focus, type, threshold, colorMode, showEyes) {
 		this.id = id;
 		this.showId = false;
-		this.type = 'skeleton';
 		this.location = createVector(x, y);
 		this.target = createVector(x, y);
 		this.ax = [];
@@ -210,15 +210,17 @@ class Skeleton {
 		this.focus = focus;
 		this.type = type;
 		this.threshold = threshold;
-		this.showEyes = showEyes || false;
 		this.colorMode = colorMode;
+		this.showEyes = showEyes || false;
 		this.follow = true;
 		this.energy = 0;
 		this.bones = [];
 		for ( let i = 0; i < this.size; i++ ) {
-			this.ax[i]   = x;
-			this.ay[i]   = y;
+			this.ax[i] = x;
+			this.ay[i] = y;
 		}
+		this.entityType = 'skeleton';
+		this.kill = false;	
 	}
 	run() {
 		this.update();
@@ -327,22 +329,54 @@ class Skeleton {
 	addBone(bc, bh, dpt, sj) {
 		this.bones.push(new Bone(this.ax[this.size-1], this.ay[this.size-1], this.ax[this.size-5], this.ay[this.size-5], bc, bh, dpt, sj));
 	}
+	delete() {
+		this.bones = [];
+		this.kill = true;
+	}
 }
 
 // Entity Mangager : new EntityManager(maximum entities)
 class EntityManager {
 	constructor(max) {
 		this.maximum = max;
+		this.entities = [];
 		this.skeletons = [];
 	}
 	run() {
-		for (let i = entities.length-1; i >= 0; i--) {
-			let e = entities[i];
+		for (let i = this.entities.length-1; i >= 0; i--) {
+			let e = this.entities[i];
+			if (e.kill) {
+				this.entities.splice(i, 1);
+				this.filterSkeletons();
+			}
 			e.run();
 		}
 	}
 	spawnSkeleton(id, x, y, size, range, focus, type, threshold, colorMode, showEyes) {
-		entities.push(new Skeleton(id, x, y, size, range, focus, type, threshold, colorMode, showEyes));
+		// Check maximum number of entities and spawn if within limit
+		if (this.entities.length < this.maximum) {
+			// Add new skeleton to array of entities
+			this.entities.push(new Skeleton(id, x, y, size, range, focus, type, threshold, colorMode, showEyes));
+			// Update array of skeletons
+			this.filterSkeletons();
+		} else {
+			// Log warning if entity limit reached or exceeded
+			console.warn('Could not spawn skeleton. Maximum number of entities reached: ' + this.maximum);
+		}
+	}
+	filterSkeletons() {
+		// Find skeletons within the main entity array and index them
+		this.skeletons = this.entities.filter(function(element) {
+			return element.entityType = 'skeleton';
+		});
+	}
+	getEntityById(id) {
+		// Return entity with specified id
+		var tag = id;
+		var e = this.entities.find(function(element) {
+			return element.id = tag;
+		});
+		return e;
 	}
 }
 
