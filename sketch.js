@@ -90,10 +90,10 @@ function setup() {
   // Set input of amplitude analyser to selected song
 	analyser.setInput(SONGS[SELECTED_SONG]);
 
-	// Create new entity manager
+	// Create new entity manager and specify maximum entities allowed to be rendered
 	entityManager  = new EntityManager(10);
 
-	// Spawn Skeletons : new Skeleton(id, origin x, origin y, size, range, frequency focus, follow threshold, color mode, show eyes)
+	// Spawn Skeletons : spawnSkeleton(id, origin x, origin y, size, range, frequency focus, follow threshold, color mode, show eyes)
 	entityManager.spawnSkeleton('skeleton' + entityManager.skeletons.length, width / 2, height / 2, 100, 0, 4000, 0, 100, HSB, true);
 	entityManager.spawnSkeleton('skeleton' + entityManager.skeletons.length, width / 2, height / 2, 100, 0, 5000, 1, 100, RGB, true);
 	entityManager.spawnSkeleton('skeleton' + entityManager.skeletons.length, width / 2, height / 2, 100, 0, 6000, 2, 100, RGB, true);
@@ -103,8 +103,13 @@ function setup() {
 	frameRate(targetFramerate);
 }
 
+// Function handling rendering
 function draw() {
-	if (assets_loaded == total_assets) loading = false;
+	// Log when loading stops
+	if (assets_loaded == total_assets) {
+		console.log('Loading Completed.');
+		loading = false;
+	}
 
 	drawBackground();
 
@@ -194,7 +199,7 @@ class Bone {
 	}
 }
 
-// Skeleton class : new Skeleton(origin x, origin y, size, range, frequency focus)
+// Skeleton class : new Skeleton(id, origin x, origin y, size, range, frequency focus, follow threshold, color mode, show eyes)
 //                  (objName).addBone(bone colour, bone health, show joints)
 class Skeleton {
 	constructor(id, x, y, size, range, focus, type, threshold, colorMode, showEyes) {
