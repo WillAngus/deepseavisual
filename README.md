@@ -20,7 +20,7 @@ An entity can be searched for using the EntityManager object. For example, here'
 ```javascript
 entityManager.getEntityById('skeleton0').colorMode = HSB;
 ```
-Despawning a creature can also be done using the EntityManager object.
+Despawning a creature can also be done using the EntityManager object:
 ```javascript
 entityManager.getEntityById('skeleton0').delete();
 ```
