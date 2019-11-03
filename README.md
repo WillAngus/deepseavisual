@@ -35,3 +35,12 @@ To select a song use the following command:
 ```javascript
 selectSong(song_name, start_time);
 ```
+
+## Global Variables
+Change these with the console for different rendering modes:
+```javascript
+let g_smoke = false;
+let g_disable_joints = false;
+let g_show_eyes = true;
+let g_paint_mode = false;
+```
