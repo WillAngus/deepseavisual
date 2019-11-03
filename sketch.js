@@ -107,7 +107,6 @@ function setup() {
 function draw() {
 	// Log when loading stops
 	if (assets_loaded == total_assets) {
-		console.log('Loading Completed.');
 		loading = false;
 	}
 
