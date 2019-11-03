@@ -1,5 +1,5 @@
 # Deep Sea Visual
-An early development music visualiser.
+Music visualiser powered with [p5.js.](https://p5js.org/)
 
 ## Spawning and managing creatures
 
