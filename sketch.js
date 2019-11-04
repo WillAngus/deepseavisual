@@ -29,37 +29,29 @@ let SMONK_7, PATIENCE, DONT_FALL;
 let analyser, spectrum, rms, fft;
 
 function loadAsset(type, url) {
+	// Create output variable to be defined once asset has loaded
+	var output;
 	// +1 to assets called and log the type and url
 	assets_called++;
-	console.log(type + ' called : ' + url)
-	
-	// Load the image and declare the output as the asset to be used 
-	if (type == 'image') {
-		var output = loadImage(url, function(image) {
-			assets_loaded++;
-			console.log(type + ' loaded successfully : ' + url);
-			return image;
-		}, error);
+	// Log asset to console once called
+	console.log(type + ' called : ' + url);
 
-		return output;
+	// Function called once called asset has successfully loaded
+	function loaded(asset) {
+		assets_loaded++;
+		console.log(type + ' loaded successfully : ' + url);
 	}
 
-	if (type == 'audio') {
-		var output = loadSound(url, function(audio) {
-			assets_loaded++;
-			console.log(type + ' loaded successfully : ' + url);
-			return audio;
-		}, error);
-
-		output.playMode('restart');
-
-		return output;
-	}
-
+	// Function called when asset fails to load
 	function error(err) {
 		assets_loaded++;
 		console.error(err);
 	}
+
+	// Define output variable
+	type === 'image' ? output = loadImage(url, loaded, error) : (output = loadSound(url, loaded, error), output.playMode('restart'));
+
+	return output;
 }
 
 function preload() {
@@ -199,6 +191,7 @@ class Skeleton {
 		this.ax = [];
 		this.ay = [];
 		this.size = size;
+		for (let i = 0; i < this.size; i++) this.ax[i] = x, this.ay[i] = y;
 		this.range = range;
 		this.step = range;
 		this.focus = focus;
@@ -209,10 +202,6 @@ class Skeleton {
 		this.follow = true;
 		this.energy = 0;
 		this.bones = [];
-		for ( let i = 0; i < this.size; i++ ) {
-			this.ax[i] = x;
-			this.ay[i] = y;
-		}
 		this.entityType = 'skeleton';
 		this.kill = false;	
 	}
@@ -379,6 +368,7 @@ class EntityManager {
 	}
 }
 
+// Function to call when changing the current song playing
 function selectSong(s, t) {
 	// Declare song starting time
 	var time = t || 0;
