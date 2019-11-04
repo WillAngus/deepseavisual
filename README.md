@@ -23,7 +23,7 @@ entityManager.getEntityById('skeleton0').colorMode = HSB;
 This can be used to change values of multiple creatures at once:
 ```javascript
 for (let i = entityManager.skeletons.length-1; i>=0; i--) {
-	entityManager.getEntityById('skeleton' + i).colorMode = RGB;
+  entityManager.getEntityById('skeleton' + i).colorMode = RGB;
 }
 ```
 Despawning a creature can also be done using the EntityManager object:
