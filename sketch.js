@@ -322,6 +322,11 @@ class Skeleton {
 			fill(0);
 			ellipse(this.ax[this.size - 2], this.ay[this.size - 2], 5);
 		}
+
+		if (this.showId) {
+			fill(255);
+			text('id: ' + this.id, this.ax[this.size - 2], this.ay[this.size - 2]);
+		}
 	}
 	followMouse(boolean) {
 		if (boolean) {
@@ -345,6 +350,7 @@ class EntityManager {
 		this.maximum = max;
 		this.entities = [];
 		this.skeletons = [];
+		this.showId = false;
 	}
 	run() {
 		for (let i = this.entities.length-1; i >= 0; i--) {
@@ -352,6 +358,11 @@ class EntityManager {
 			if (e.kill) {
 				this.entities.splice(i, 1);
 				this.filterSkeletons();
+			}
+			if (this.showId) {
+				e.showId = true;
+			} else {
+				e.showId = false;
 			}
 			e.run();
 		}
@@ -376,11 +387,7 @@ class EntityManager {
 	}
 	getEntityById(id) {
 		// Return entity with specified id
-		var tag = id;
-		var e = this.entities.find(function(element) {
-			return element.id = tag;
-		});
-		return e;
+		return this.entities.find(x => x.id === id);
 	}
 }
 
