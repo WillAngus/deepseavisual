@@ -147,8 +147,6 @@ function run() {
 	
 	// Time counter
 	t = t + (0.01);
-
-	delta = deltaTime / targetFramerate;
 }
 
 // Bone class : new Bone(new x pos, new y pos, previous x pos, previous y pos, colour, health, damage-per-tick, toggle joints)
@@ -159,8 +157,7 @@ class Bone {
 		this.px = px;
 		this.py = py;
 		this.colour = colour || 'rgb(255, 255, 255)';
-		this.health = health;
-		if (this.health < 50) this.health = 50;
+		health < 50 ? this.health = 50 : this.health = health;
 		this.dpt = dpt;
 		this.showJoint = showJoint || false;
 		this.alive = true;
