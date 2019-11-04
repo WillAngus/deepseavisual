@@ -105,28 +105,21 @@ function setup() {
 
 // Function handling rendering
 function draw() {
-	// Log when loading stops
-	if (assets_loaded == total_assets) {
-		loading = false;
-	}
-
 	drawBackground();
 
-	if (!loading) {
-		if (!started) {
-			startScreen();
-		} else {
-			run();
-		}
-	}
+	// Set loading to false once all assets loaded
+	assets_loaded == total_assets && (loading = false);
+
+	// Run visualiser once loading is complete otherwise show start screen
+	loading || (started ? run() : startScreen());
 }
 
 function drawBackground() {
-	if (!g_paint_mode) background(10 + (fft.getEnergy(150)/10), 0, 10 + fft.getEnergy(50)/10);
+	// Set background to translucent when paint mode enabled
+	g_paint_mode ? background(10, 10, 10, 0.5) : background(10 + (fft.getEnergy(150)/10), 0, 10 + fft.getEnergy(50)/10);
 	
-	else background(10, 10, 10, 0.5);
-
-	if (!started) background(2, 0, 6);
+	// Startscreen background
+	started || background(2, 0, 6);
 }
 
 function startScreen() {
@@ -256,7 +249,7 @@ class Skeleton {
 		} else if (!mouseIsPressed) {
 			this.follow = false;
 		}
-		
+
 		// Add new position to array
 		if (this.follow) {
 			// Wander towards the target
@@ -359,11 +352,9 @@ class EntityManager {
 				this.entities.splice(i, 1);
 				this.filterSkeletons();
 			}
-			if (this.showId) {
-				e.showId = true;
-			} else {
-				e.showId = false;
-			}
+
+			this.showId ? e.showId = true : e.showId = false;
+
 			e.run();
 		}
 	}
