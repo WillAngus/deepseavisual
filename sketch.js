@@ -24,7 +24,7 @@ var filterSkeletons;
 let png_playButton, png_missingTexture;
 
 let SONGS, SELECTED_SONG, SONG_START;
-let SMONK_7, PATIENCE, DONT_FALL;
+let SMONK_7, PATIENCE, SOME_GIRLS;
 
 let analyser, spectrum, rms, fft;
 
@@ -38,6 +38,7 @@ function loadAsset(type, url) {
 
 	// Function called once called asset has successfully loaded
 	function loaded(asset) {
+		// +1 to assets successfully loaded
 		assets_loaded++;
 		console.log(type + ' loaded successfully : ' + url);
 	}
@@ -61,7 +62,8 @@ function preload() {
 	// Load audio and select song
 	SMONK_7        = loadAsset('audio', 'assets/sound/SMONK 7.mp3');
 	PATIENCE       = loadAsset('audio', 'assets/sound/PATIENCE.mp3');
-	SONGS          = new Array(SMONK_7, PATIENCE, DONT_FALL);
+	SOME_GIRLS     = loadAsset('audio', 'assets/sound/SOME GIRLS [SUPERSONIC SUBMISSION].mp3');
+	SONGS          = new Array(SMONK_7, PATIENCE, SOME_GIRLS);
 	SELECTED_SONG  = SONGS.indexOf(SMONK_7);
 	SONG_START     = 27;
 }
@@ -333,10 +335,12 @@ class EntityManager {
 	run() {
 		for (let i = this.entities.length-1; i >= 0; i--) {
 			let e = this.entities[i];
-			if (e.kill) {
-				this.entities.splice(i, 1);
-				this.filterSkeletons();
-			}
+			//if (e.kill) {
+			//	this.entities.splice(i, 1);
+			//	this.filterSkeletons();
+			//}
+
+			!e.kill || (this.entities.splice(i, 1), this.filterSkeletons()); 
 
 			this.showId ? e.showId = true : e.showId = false;
 
