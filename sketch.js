@@ -48,7 +48,7 @@ function loadAsset(type, url) {
 		console.error(err);
 	}
 
-	// Define output variable
+	// Define output variable depending on the asset type
 	type === 'image' ? output = loadImage(url, loaded, error) : (output = loadSound(url, loaded, error), output.playMode('restart'));
 
 	return output;
@@ -61,7 +61,6 @@ function preload() {
 	// Load audio and select song
 	SMONK_7        = loadAsset('audio', 'assets/sound/SMONK 7.mp3');
 	PATIENCE       = loadAsset('audio', 'assets/sound/PATIENCE.mp3');
-	//DONT_FALL      = loadAsset('audio', 'https://willangus.github.io/deepseavisual/assets/sound/PLEASE DONT FALL.wav');
 	SONGS          = new Array(SMONK_7, PATIENCE, DONT_FALL);
 	SELECTED_SONG  = SONGS.indexOf(SMONK_7);
 	SONG_START     = 27;
