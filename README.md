@@ -1,5 +1,5 @@
 # Deep Sea Visual
-Music visualiser powered with [p5.js.](https://p5js.org/)
+Music visualiser powered by [p5.js.](https://p5js.org/)
 
 ## Spawning and managing creatures
 
